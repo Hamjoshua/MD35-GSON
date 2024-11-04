@@ -13,11 +13,11 @@ import timber.log.Timber
 import java.net.HttpURLConnection
 import java.net.URL
 
-private var RView : RecyclerView? = null
 private var contacts : ArrayList<Contact> = ArrayList<Contact>()
 private var editableContacts : ArrayList<Contact> = ArrayList<Contact>()
 
 class MainActivity : AppCompatActivity() {
+    public lateinit var RView : RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -45,30 +45,32 @@ class MainActivity : AppCompatActivity() {
             RView?.adapter = CardAdapter(editableContacts);
         }
     }
-}
 
-class HttpGetRequest : AsyncTask<String, Void, String>(){
-    override fun doInBackground(vararg params: String?): String {
-        var text: String = "";
-        val url: URL = URL(params[0])
-        val urlConn: HttpURLConnection = url.openConnection() as HttpURLConnection
-        text = urlConn.inputStream.bufferedReader().readText()
+    inner class HttpGetRequest : AsyncTask<String, Void, String>(){
+        override fun doInBackground(vararg params: String?): String {
+            var text: String = "";
+            val url: URL = URL(params[0])
+            val urlConn: HttpURLConnection = url.openConnection() as HttpURLConnection
+            text = urlConn.inputStream.bufferedReader().readText()
 
-        return text;
-    }
-
-    override fun onPostExecute(result: String?) {
-        val gson = Gson();
-        val itemType = object : TypeToken<ArrayList<Contact>>() {}.type
-        contacts = gson.fromJson<ArrayList<Contact>>(result, itemType);
-        editableContacts = contacts.clone() as ArrayList<Contact>
-
-        if(RView?.context != null){
-            RView?.adapter = CardAdapter(editableContacts);
+            return text;
         }
-    }
 
+        override fun onPostExecute(result: String?) {
+            val gson = Gson();
+            val itemType = object : TypeToken<ArrayList<Contact>>() {}.type
+            contacts = gson.fromJson<ArrayList<Contact>>(result, itemType);
+            editableContacts = contacts.clone() as ArrayList<Contact>
+
+            if(RView.context != null){
+                RView.adapter = CardAdapter(editableContacts);
+            }
+        }
+
+    }
 }
+
+
 
 data class Contact(
     val phone: String,
