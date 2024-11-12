@@ -7,12 +7,17 @@ import android.os.Bundle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.HttpURLConnection
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
-    public lateinit var RView: RecyclerView
+    // public lateinit var RView: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -20,48 +25,46 @@ class MainActivity : AppCompatActivity() {
 
         Timber.plant(Timber.DebugTree())
 
-        RView = findViewById<RecyclerView>(R.id.rView);
+        var RView: RecyclerView = findViewById<RecyclerView>(R.id.rView);
 
         RView.setHasFixedSize(true)
         RView.layoutManager = gridLayoutManager
 
-        HttpGetRequest().execute(
-            "https://api.flickr.com/services/rest/" +
+        CoroutineScope(Dispatchers.IO).launch {
+            val url: URL = URL("https://api.flickr.com/services/rest/" +
                     "?method=flickr.photos.search&api_key" +
-                    "=ff49fcd4d4a08aa6aafb6ea3de826464&tags=cat&format=json&nojsoncallback=1"
-        )
-    }
-
-    inner class HttpGetRequest : AsyncTask<String, Void, String>() {
-        override fun doInBackground(vararg params: String?): String {
-            var text: String = "";
-            val url: URL = URL(params[0])
+                    "=ff49fcd4d4a08aa6aafb6ea3de826464&tags=cat&format=json&nojsoncallback=1")
             val urlConn: HttpURLConnection = url.openConnection() as HttpURLConnection
-            text = urlConn.inputStream.bufferedReader().readText()
+            var text: String = urlConn.inputStream.bufferedReader().readText()
 
-            return text;
-        }
-
-        override fun onPostExecute(result: String?) {
             val gson = Gson();
-            val wrapper: Wrapper = gson.fromJson(result, Wrapper::class.java);
+            val wrapper: Wrapper = gson.fromJson(text, Wrapper::class.java);
             var counter: Int = 1
 
-            if (RView.context != null) {
-                RView.adapter = ImageAdapter(RView.context!!, wrapper.photos.photo);
-            }
-
-
-            for (photo in wrapper.photos.photo) {
-                if (counter % 5 == 0) {
-                    Timber.i(photo.toString());
+            withContext(Dispatchers.Main) {
+                if (RView.context != null) {
+                    RView.adapter = ImageAdapter(RView.context!!, wrapper.photos.photo);
                 }
 
-                ++counter;
+
+                for (photo in wrapper.photos.photo) {
+                    if (counter % 5 == 0) {
+                        Timber.i(photo.toString());
+                    }
+
+                    ++counter;
+                }
+            }
+        }
+
+        runBlocking{
+            launch{
+
+
+
             }
         }
     }
-
 }
 
 
