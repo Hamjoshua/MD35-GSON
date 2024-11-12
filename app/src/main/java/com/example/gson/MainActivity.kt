@@ -1,7 +1,6 @@
 package com.example.gson
 
 import android.net.Uri
-import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.recyclerview.widget.GridLayoutManager
@@ -54,14 +53,6 @@ class MainActivity : AppCompatActivity() {
 
                     ++counter;
                 }
-            }
-        }
-
-        runBlocking{
-            launch{
-
-
-
             }
         }
     }
