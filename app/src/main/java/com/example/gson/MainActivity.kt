@@ -1,8 +1,11 @@
 package com.example.gson
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -42,7 +45,13 @@ class MainActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 if (RView.context != null) {
-                    RView.adapter = ImageAdapter(RView.context!!, wrapper.photos.photo);
+                    RView.adapter = ImageAdapter(wrapper.photos.photo){
+                        val clipboardManager = this@MainActivity.getSystemService(CLIPBOARD_SERVICE)
+                                as ClipboardManager
+                        val clipData = ClipData.newPlainText("Copied Text", it)
+                        clipboardManager.setPrimaryClip(clipData)
+                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
+                    }
                 }
 
 
